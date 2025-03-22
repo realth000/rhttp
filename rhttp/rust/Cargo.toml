@@ -17,10 +17,18 @@ tokio-util = "0.7.12"
 version = "0.12.12"
 default-features = false
 features = [
+    # Enable since rustls is disabled.
+    "default-tls",
+
     "charset",
     "http2",
-    "http3",
-    "rustls-tls-webpki-roots",
+
+    # Disable "http3" and "rustls-tls-webpki-roots" feature, otherwise encounter a `Unexpected EOF` on server website.
+    # It's weired that only happen on specific website, seems compatibility with old websites is not good enough.
+    # Though it's expected to only use Http1.1, safe.
+    #"http3",
+    #"rustls-tls-webpki-roots",
+
     "stream",
     "multipart",
     "socks",

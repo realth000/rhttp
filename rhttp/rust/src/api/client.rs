@@ -168,78 +168,81 @@ fn create_client(settings: ClientSettings) -> Result<RequestClient, RhttpError> 
             }
 
             if let Some(keep_alive_timeout) = timeout_settings.keep_alive_timeout {
-                let timeout = keep_alive_timeout
-                    .to_std()
-                    .map_err(|e| RhttpError::RhttpUnknownError(e.to_string()))?;
-                if timeout.as_millis() > 0 {
-                    client = client.tcp_keepalive(timeout);
-                    client = client.http2_keep_alive_while_idle(true);
-                    client = client.http2_keep_alive_timeout(timeout);
-                }
+                return Err(RhttpError::RhttpUnknownError("keep live is disabled in this fork".to_string()));
+                // let timeout = keep_alive_timeout
+                //     .to_std()
+                //     .map_err(|e| RhttpError::RhttpUnknownError(e.to_string()))?;
+                // if timeout.as_millis() > 0 {
+                //     client = client.tcp_keepalive(timeout);
+                //     client = client.http2_keep_alive_while_idle(true);
+                //     client = client.http2_keep_alive_timeout(timeout);
+                // }
             }
 
             if let Some(keep_alive_ping) = timeout_settings.keep_alive_ping {
-                client = client.http2_keep_alive_interval(
-                    keep_alive_ping
-                        .to_std()
-                        .map_err(|e| RhttpError::RhttpUnknownError(e.to_string()))?,
-                );
+                return Err(RhttpError::RhttpUnknownError("keep live is disabled in this fork".to_string()));
+                // client = client.http2_keep_alive_interval(
+                //     keep_alive_ping
+                //         .to_std()
+                //         .map_err(|e| RhttpError::RhttpUnknownError(e.to_string()))?,
+                // );
             }
         }
 
         if let Some(tls_settings) = settings.tls_settings {
-            if !tls_settings.trust_root_certificates {
-                client = client.tls_built_in_root_certs(false);
-            }
+            return Err(RhttpError::RhttpUnknownError("TLS settings is disabled in this fork".to_string()));
+            // if !tls_settings.trust_root_certificates {
+            //     client = client.tls_built_in_root_certs(false);
+            // }
 
-            for cert in tls_settings.trusted_root_certificates {
-                client =
-                    client.add_root_certificate(Certificate::from_pem(&cert).map_err(|e| {
-                        RhttpError::RhttpUnknownError(format!(
-                            "Error adding trusted certificate: {e:?}"
-                        ))
-                    })?);
-            }
+            // for cert in tls_settings.trusted_root_certificates {
+            //     client =
+            //         client.add_root_certificate(Certificate::from_pem(&cert).map_err(|e| {
+            //             RhttpError::RhttpUnknownError(format!(
+            //                 "Error adding trusted certificate: {e:?}"
+            //             ))
+            //         })?);
+            // }
 
-            if !tls_settings.verify_certificates {
-                client = client.danger_accept_invalid_certs(true);
-            }
+            // if !tls_settings.verify_certificates {
+            //     client = client.danger_accept_invalid_certs(true);
+            // }
 
-            if let Some(client_certificate) = tls_settings.client_certificate {
-                let identity = &[
-                    client_certificate.certificate.as_slice(),
-                    "\n".as_bytes(),
-                    client_certificate.private_key.as_slice(),
-                ]
-                .concat();
+            // if let Some(client_certificate) = tls_settings.client_certificate {
+            //     let identity = &[
+            //         client_certificate.certificate.as_slice(),
+            //         "\n".as_bytes(),
+            //         client_certificate.private_key.as_slice(),
+            //     ]
+            //     .concat();
 
-                client = client.identity(
-                    reqwest::Identity::from_pem(identity)
-                        .map_err(|e| RhttpError::RhttpUnknownError(format!("{e:?}")))?,
-                );
-            }
+            //     client = client.identity(
+            //         reqwest::Identity::from_pem(identity)
+            //             .map_err(|e| RhttpError::RhttpUnknownError(format!("{e:?}")))?,
+            //     );
+            // }
 
-            if let Some(min_tls_version) = tls_settings.min_tls_version {
-                client = client.min_tls_version(match min_tls_version {
-                    TlsVersion::Tls1_2 => tls::Version::TLS_1_2,
-                    TlsVersion::Tls1_3 => tls::Version::TLS_1_3,
-                });
-            }
+            // if let Some(min_tls_version) = tls_settings.min_tls_version {
+            //     client = client.min_tls_version(match min_tls_version {
+            //         TlsVersion::Tls1_2 => tls::Version::TLS_1_2,
+            //         TlsVersion::Tls1_3 => tls::Version::TLS_1_3,
+            //     });
+            // }
 
-            if let Some(max_tls_version) = tls_settings.max_tls_version {
-                client = client.max_tls_version(match max_tls_version {
-                    TlsVersion::Tls1_2 => tls::Version::TLS_1_2,
-                    TlsVersion::Tls1_3 => tls::Version::TLS_1_3,
-                });
-            }
+            // if let Some(max_tls_version) = tls_settings.max_tls_version {
+            //     client = client.max_tls_version(match max_tls_version {
+            //         TlsVersion::Tls1_2 => tls::Version::TLS_1_2,
+            //         TlsVersion::Tls1_3 => tls::Version::TLS_1_3,
+            //     });
+            // }
 
-            client = client.tls_sni(tls_settings.sni);
+            // client = client.tls_sni(tls_settings.sni);
         }
 
         client = match settings.http_version_pref {
             HttpVersionPref::Http10 | HttpVersionPref::Http11 => client.http1_only(),
             HttpVersionPref::Http2 => client.http2_prior_knowledge(),
-            HttpVersionPref::Http3 => client.http3_prior_knowledge(),
+            HttpVersionPref::Http3 => client.http2_prior_knowledge(),
             HttpVersionPref::All => client,
         };
 
